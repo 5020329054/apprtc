@@ -8,7 +8,6 @@ package collider
 
 import (
 	"crypto/tls"
-	"golang.org/x/net/websocket"
 	"encoding/json"
 	"errors"
 	"html"
@@ -19,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 const registerTimeoutSec = 10
@@ -44,15 +45,15 @@ func (c *Collider) Run(p int, useTls bool) {
 	http.Handle("/ws", websocket.Handler(c.wsHandler))
 	http.HandleFunc("/status", c.httpStatusHandler)
 	http.HandleFunc("/", c.httpHandler)
-
+	http.HandleFunc("/room", c.httpRoomHandler)
 	var e error
 
 	pstr := ":" + strconv.Itoa(p)
 	if useTls {
-		config := &tls.Config {
+		config := &tls.Config{
 			// Only allow ciphers that support forward secrecy for iOS9 compatibility:
 			// https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/
-			CipherSuites: []uint16 {
+			CipherSuites: []uint16{
 				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
@@ -63,7 +64,7 @@ func (c *Collider) Run(p int, useTls bool) {
 			},
 			PreferServerCipherSuites: true,
 		}
-		server := &http.Server{ Addr: pstr, Handler: nil, TLSConfig: config }
+		server := &http.Server{Addr: pstr, Handler: nil, TLSConfig: config}
 
 		e = server.ListenAndServeTLS("/cert/cert.pem", "/cert/key.pem")
 	} else {
@@ -83,6 +84,18 @@ func (c *Collider) httpStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	rp := c.dash.getReport(c.roomTable)
 	enc := json.NewEncoder(w)
+	if err := enc.Encode(rp); err != nil {
+		err = errors.New("Failed to encode to JSON: err=" + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.dash.onHttpErr(err)
+	}
+}
+
+func (c *Collider) httpRoomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "GET")
+	rp := c.roomNames()y
+	enc := json.NewEncodvvper(w)
 	if err := enc.Encode(rp); err != nil {
 		err = errors.New("Failed to encode to JSON: err=" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
