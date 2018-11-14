@@ -32,6 +32,20 @@ func (rt *roomTable) room(id string) *room {
 	return rt.roomLocked(id)
 }
 
+func (rt *roomTable) roomNames() []string {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
+	return rt.roomNamesLocked()
+}
+
+func (rt *roomTable) roomNamesLocked() []string {
+	keys := make([]string, 0, len(rt.rooms))
+	for k := range rooms {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // roomLocked gets or creates the room without acquiring the lock. Used when the caller already acquired the lock.
 func (rt *roomTable) roomLocked(id string) *room {
 	if r, ok := rt.rooms[id]; ok {
