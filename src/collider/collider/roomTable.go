@@ -40,7 +40,7 @@ func (rt *roomTable) roomNames() []string {
 
 func (rt *roomTable) roomNamesLocked() []string {
 	keys := make([]string, 0, len(rt.rooms))
-	for k := range rooms {
+	for k := range rt.rooms {
 		keys = append(keys, k)
 	}
 	return keys
