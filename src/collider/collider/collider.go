@@ -94,7 +94,7 @@ func (c *Collider) httpStatusHandler(w http.ResponseWriter, r *http.Request) {
 func (c *Collider) httpRoomHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
-	rp := c.roomNames()y
+	rp := c.roomNames()
 	enc := json.NewEncodvvper(w)
 	if err := enc.Encode(rp); err != nil {
 		err = errors.New("Failed to encode to JSON: err=" + err.Error())
